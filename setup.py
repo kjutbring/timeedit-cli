@@ -3,7 +3,7 @@ Will get your schedule from Timeedit.
 """
 from setuptools import find_packages, setup
 
-dependencies = ['click']
+dependencies = ['click', 'requests', 'bs4']
 
 setup(
     name='timeedit',
