@@ -1,16 +1,25 @@
 import click
+import configparser
 import requests
 from bs4 import BeautifulSoup
 
-URL = "https://se.timeedit.net/web/lu/db1/ht3/objects.html?max=15&fr=t&partajax=t&im=f&sid=5&l=sv_SE&search_text="
-TYPE = "&types=183"
+# configuration things
+settings = configparser.ConfigParser()
+settings.read("../config.ini")
 
-def getUrl(Url, courseCode, sType): 
-    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
+SEARCH_URL = settings.get("TimeEdit", "SearchUrl")
+TYPE = settings.get("TimeEdit", "Type")
+SCHEDULE_URL = settings.get("TimeEdit", "ScheduleUrl")
+
+# header
+HEADERS = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
+
+
+def getUrl(courseCode): 
     html = ""
 
     try:
-        html = requests.get(Url + courseCode + sType, headers=headers)
+        html = requests.get(SEARCH_URL + courseCode + TYPE, headers=HEADERS)
     except requests.ConnectionError:
         click.echo("Err: No Internet Connection!")
         exit(0) 
@@ -22,3 +31,17 @@ def parseUrl(soup):
     dataId = div["data-id"]
     return dataId
 
+def getSchedule(courseCode, weeks):
+    dataId = parseUrl(getUrl(courseCode))
+    json = ""
+    
+    # build url who request schedule
+    url = SCHEDULE_URL + weeks + ".w" + "&objects=" + dataId
+    
+    try:
+        json = requests.get(url, headers=HEADERS)
+    except requests.ConnectionError:
+        click.echo("Err: No Internet Connection!")
+        exit(0)
+
+    return json.content
