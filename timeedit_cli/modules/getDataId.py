@@ -1,11 +1,12 @@
 import click
 import configparser
+import json
 import requests
 from bs4 import BeautifulSoup
 
 # configuration things
 settings = configparser.ConfigParser()
-settings.read("../config.ini")
+settings.read("config.ini")
 
 SEARCH_URL = settings.get("TimeEdit", "SearchUrl")
 TYPE = settings.get("TimeEdit", "Type")
@@ -45,3 +46,36 @@ def getSchedule(courseCode, weeks):
         exit(0)
 
     return json.content
+
+def parseJson(jsonString):
+    parsedJson = json.loads(jsonString.decode("utf-8"))
+    
+    result = []
+
+    for reservation in parsedJson["reservations"]:
+        columns = []
+
+        columns.append(reservation["startdate"] + ", " + reservation["starttime"] +
+                    " - " + reservation["endtime"])
+
+        for column in reservation["columns"]:
+            columns.append(column)
+        
+        result.append(columns)
+
+    return result
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
